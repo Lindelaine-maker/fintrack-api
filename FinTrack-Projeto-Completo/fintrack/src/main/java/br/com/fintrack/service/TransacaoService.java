@@ -75,9 +75,11 @@ public class TransacaoService {
     @Transactional(readOnly = true)
     public SaldoDTO saldo(Authentication auth) {
         Long uid = usuarioService.usuarioAtual(auth).getId();
-        Object[] totais = transacoes.calcularTotaisPorUsuario(uid, TipoTransacao.RECEITA, TipoTransacao.DESPESA);
-        BigDecimal receitas = totais[0] == null ? BigDecimal.ZERO : (BigDecimal) totais[0];
-        BigDecimal despesas = totais[1] == null ? BigDecimal.ZERO : (BigDecimal) totais[1];
+        // Consultas tipadas evitam casts frágeis do resultado agregado (Object[]) entre bancos.
+        BigDecimal receitas = transacoes.sumValorByUsuarioIdAndTipo(uid, TipoTransacao.RECEITA);
+        BigDecimal despesas = transacoes.sumValorByUsuarioIdAndTipo(uid, TipoTransacao.DESPESA);
+        receitas = receitas == null ? BigDecimal.ZERO : receitas;
+        despesas = despesas == null ? BigDecimal.ZERO : despesas;
         return new SaldoDTO(receitas, despesas, receitas.subtract(despesas));
     }
 
