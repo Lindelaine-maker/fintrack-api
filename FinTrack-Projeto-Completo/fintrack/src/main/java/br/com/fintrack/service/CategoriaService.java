@@ -36,6 +36,8 @@ public class CategoriaService {
         String nome=dto.nome().trim();
         if(repo.existsByNomeIgnoreCaseAndUsuarioIdAndIdNot(nome,u.getId(),id))
             throw new ResourceConflictException("Já existe outra categoria com esse nome.");
+        if(c.getTipo()!=dto.tipo() && !c.getTransacoes().isEmpty())
+            throw new ResourceConflictException("Não é possível alterar o tipo de uma categoria que possui transações.");
         c.setNome(nome);c.setDescricao(dto.descricao());c.setTipo(dto.tipo());return dto(c);
     }
 
