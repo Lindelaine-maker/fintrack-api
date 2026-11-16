@@ -4,7 +4,6 @@ import br.com.fintrack.dto.*;
 import br.com.fintrack.exception.*;
 import br.com.fintrack.model.*;
 import br.com.fintrack.repository.*;
-import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +17,12 @@ public class TransacaoService {
     private final TransacaoRepository transacoes;
     private final CategoriaRepository categorias;
     private final UsuarioService usuarioService;
-    private final ModelMapper mapper;
 
     public TransacaoService(TransacaoRepository transacoes, CategoriaRepository categorias,
-                            UsuarioService usuarioService, ModelMapper mapper) {
+                            UsuarioService usuarioService) {
         this.transacoes = transacoes;
         this.categorias = categorias;
         this.usuarioService = usuarioService;
-        this.mapper = mapper;
     }
 
     @Transactional(readOnly = true)
@@ -45,10 +42,7 @@ public class TransacaoService {
         validarCategoriaTipo(dto.tipo(), categoria);
         validarSaldo(dto.valor(), dto.tipo(), usuario.getId(), null);
 
-        Transacao transacao = mapper.map(dto, Transacao.class);
-        // O ID é gerado pelo servidor; nunca aceitar ID enviado no corpo do POST.
-        transacao.setId(null);
-        transacao.setDescricao(dto.descricao().trim());
+        Transacao transacao = novaTransacao(dto);
         associarProprietarioECategoria(transacao, categoria, usuario);
         return dto(transacoes.save(transacao));
     }
@@ -62,11 +56,10 @@ public class TransacaoService {
         validarCategoriaTipo(dto.tipo(), categoria);
         validarSaldo(dto.valor(), dto.tipo(), usuario.getId(), id);
 
-        Transacao dadosAtualizados = mapper.map(dto, Transacao.class);
-        transacao.setDescricao(dadosAtualizados.getDescricao().trim());
-        transacao.setValor(dadosAtualizados.getValor());
-        transacao.setData(dadosAtualizados.getData());
-        transacao.setTipo(dadosAtualizados.getTipo());
+        transacao.setDescricao(dto.descricao().trim());
+        transacao.setValor(dto.valor());
+        transacao.setData(dto.data());
+        transacao.setTipo(dto.tipo());
         associarProprietarioECategoria(transacao, categoria, usuario);
         return dto(transacao);
     }
@@ -93,6 +86,15 @@ public class TransacaoService {
         if (auth == null) return false;
         return transacoes.pertenceAoUsuario(id, usuarioService.usuarioAtual(auth).getId())
                 .orElse(true);
+    }
+
+    private Transacao novaTransacao(TransacaoDTO dto) {
+        Transacao transacao = new Transacao();
+        transacao.setDescricao(dto.descricao().trim());
+        transacao.setValor(dto.valor());
+        transacao.setData(dto.data());
+        transacao.setTipo(dto.tipo());
+        return transacao;
     }
 
     private Categoria categoria(Long id, Long uid) {
@@ -123,9 +125,7 @@ public class TransacaoService {
     }
 
     private TransacaoDTO dto(Transacao transacao) {
-        // ModelMapper é usado no mapeamento de entrada (record -> entidade).
-        // A saída é construída explicitamente porque records são imutáveis e o ModelMapper
-        // tenta instanciá-los por reflexão, o que falha para este tipo de destino.
+        // O DTO de saída é um record imutável, construído explicitamente.
         return new TransacaoDTO(transacao.getId(), transacao.getDescricao(), transacao.getValor(),
                 transacao.getData(), transacao.getTipo(), transacao.getCategoria().getId(),
                 transacao.getCategoria().getNome());
