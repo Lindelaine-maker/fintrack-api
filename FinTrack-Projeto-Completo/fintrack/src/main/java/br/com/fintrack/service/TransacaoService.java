@@ -46,6 +46,8 @@ public class TransacaoService {
         validarSaldo(dto.valor(), dto.tipo(), usuario.getId(), null);
 
         Transacao transacao = mapper.map(dto, Transacao.class);
+        // O ID é gerado pelo servidor; nunca aceitar ID enviado no corpo do POST.
+        transacao.setId(null);
         transacao.setDescricao(dto.descricao().trim());
         associarProprietarioECategoria(transacao, categoria, usuario);
         return dto(transacoes.save(transacao));
