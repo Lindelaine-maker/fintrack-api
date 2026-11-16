@@ -29,6 +29,7 @@ public class CategoriaController {
 
     @GetMapping
     @Operation(summary="Listar categorias do usuário autenticado")
+    @ApiResponse(responseCode="200", description="Categorias do usuário autenticado")
     public List<CategoriaDTO> listar(Authentication auth){return service.listar(auth);}
 
     @PostMapping
