@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
@@ -16,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class FinTrackSecurityIntegrationTest {
 
     @Autowired private MockMvc mvc;
@@ -70,6 +72,29 @@ class FinTrackSecurityIntegrationTest {
         mvc.perform(delete("/api/v1/categorias/" + categoryId)
                 .header("Authorization", "Bearer " + tokenA))
             .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void recursoInexistenteRetorna404ERecursoDeOutroUsuarioRetorna403() throws Exception {
+        String tokenA = registerAndGetToken("proprietario");
+        String tokenB = registerAndGetToken("nao-proprietario");
+        String category = """
+            {"nome":"Categoria privada","descricao":"Teste","tipo":"RECEITA"}
+            """;
+        String response = mvc.perform(post("/api/v1/categorias")
+                .header("Authorization", "Bearer " + tokenA)
+                .contentType(MediaType.APPLICATION_JSON).content(category))
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString();
+        long categoryId = objectMapper.readTree(response).get("id").asLong();
+
+        mvc.perform(delete("/api/v1/categorias/99999999")
+                .header("Authorization", "Bearer " + tokenA))
+            .andExpect(status().isNotFound());
+
+        mvc.perform(delete("/api/v1/categorias/" + categoryId)
+                .header("Authorization", "Bearer " + tokenB))
+            .andExpect(status().isForbidden());
     }
 
     @Test
