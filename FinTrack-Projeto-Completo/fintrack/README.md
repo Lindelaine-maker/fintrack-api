@@ -96,7 +96,7 @@ A aplicação aceita a variável de ambiente `JWT_SECRET` (chave Base64 de pelo 
 
 Para testar endpoints protegidos:
 1. Faça o cadastro ou login.
-2. Copie o campo `token da resposta.
+2. Copie o campo `token` da resposta.
 3. Clique em **Authorize** no Swagger e informe o token Bearer.
 4. Execute as operações de categorias e transações.
 
