@@ -120,6 +120,7 @@ class FinTrackSecurityIntegrationTest {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").isNumber())
             .andExpect(jsonPath("$.descricao").value("Salário de teste"))
+            .andExpect(jsonPath("$.data").value("2026-11-10"))
             .andExpect(jsonPath("$.categoriaNome").value("Salário"));
 
         mvc.perform(get("/api/v1/transacoes/relatorios/saldo")
