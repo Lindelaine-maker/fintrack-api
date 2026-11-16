@@ -6,5 +6,7 @@ import java.util.Optional;
 public interface CategoriaRepository extends JpaRepository<Categoria,Long> {
     List<Categoria> findByUsuarioIdOrderByNomeAsc(Long usuarioId);
     Optional<Categoria> findByIdAndUsuarioId(Long id, Long usuarioId);
+    boolean existsByIdAndUsuarioId(Long id, Long usuarioId);
     boolean existsByNomeIgnoreCaseAndUsuarioId(String nome, Long usuarioId);
+    boolean existsByNomeIgnoreCaseAndUsuarioIdAndIdNot(String nome, Long usuarioId, Long id);
 }

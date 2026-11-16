@@ -1,31 +1,34 @@
-# FinTrack — API de Finanças Pessoais
+# FinTrack API
 
-Projeto acadêmico de uma API RESTful para gerenciamento de finanças pessoais, com Java 17 e Spring Boot.
+Projeto acadêmico de API RESTful para gerenciamento de finanças pessoais, desenvolvido em Java 17 e Spring Boot 3.
+
+## Código-fonte
+
+O projeto Maven completo está em [FinTrack-Projeto-Completo/fintrack](FinTrack-Projeto-Completo/fintrack/). Consulte o [README detalhado](FinTrack-Projeto-Completo/fintrack/README.md) para configuração, exemplos de requisições e execução.
 
 ## Tecnologias
-- Spring Boot 3, Spring Web e Spring Data JPA/Hibernate
-- Spring Security com autenticação JWT
-- DTOs, validação e camada de serviços
-- H2 para desenvolvimento e configuração alternativa para PostgreSQL
+
+- Spring Boot, Spring Web e Spring Data JPA/Hibernate
+- Spring Security stateless com JWT e BCrypt
+- DTOs, Bean Validation e camada de serviços
+- H2 para desenvolvimento e PostgreSQL como perfil alternativo
 - Swagger/OpenAPI
 
-## Funcionalidades
-- Cadastro e login de usuários
-- CRUD de categorias e transações
-- Consultas por período, por categoria e resumo de saldo por tipo
-- Proteção de recursos por usuário autenticado
-- Tratamento global de erros e documentação dos endpoints
+## Executar
 
-## Executar localmente
-Requer Java 17 e Maven. Na raiz do projeto, execute:
+Requer JDK 17+ e Maven 3.8+.
+
+No terminal, entre na pasta do projeto:
 
 ```bash
+cd FinTrack-Projeto-Completo/fintrack
 mvn spring-boot:run
 ```
 
-A documentação Swagger fica disponível em `http://localhost:8080/swagger-ui.html`.
+Swagger: http://localhost:8080/swagger-ui.html
 
-## Código-fonte
-O pacote completo `FinTrack-Projeto-Completo.zip` foi entregue nesta conversa. Ele contém o projeto Maven e os arquivos Java em `src/main/java`. O ZIP ainda não foi adicionado a este repositório; esta página documenta o projeto e orienta sua execução.
+## Requisitos do módulo avançado
 
-> Observação: a compilação e os testes automatizados ainda precisam ser executados em um ambiente com Maven instalado.
+A API contém autenticação/registro, CRUD de categorias e transações, relatório de saldo, isolamento dos dados por usuário autenticado, consultas JPQL, tratamento global de erros e documentação OpenAPI.
+
+As correções em revisão estão na [pull request #1](https://github.com/Lindelaine-maker/fintrack-api/pull/1). O workflow Maven compila o projeto com JDK 17.
