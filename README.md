@@ -31,4 +31,4 @@ Swagger: http://localhost:8080/swagger-ui.html
 
 A API contém autenticação/registro, CRUD de categorias e transações, relatório de saldo, isolamento dos dados por usuário autenticado, consultas JPQL, tratamento global de erros e documentação OpenAPI.
 
-As correções em revisão estão na [pull request #1](https://github.com/Lindelaine-maker/fintrack-api/pull/1). O workflow Maven compila o projeto com JDK 17.
+As correções de implementação foram integradas na [pull request #6](https://github.com/Lindelaine-maker/fintrack-api/pull/6). A validação automatizada de compilação e testes é executada pelo workflow **FinTrack CI** com JDK 17.
