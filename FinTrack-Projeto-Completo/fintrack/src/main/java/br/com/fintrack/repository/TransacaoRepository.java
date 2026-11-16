@@ -10,13 +10,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TransacaoRepository extends JpaRepository<Transacao,Long> {
-    @Query("select t from Transacao t where t.usuario.id=:uid and t.data between :inicio and :fim order by t.data desc")
-    List<Transacao> findByUsuarioIdAndDataBetween(@Param("uid") Long uid, @Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
+    @Query("select t from Transacao t where t.usuario.id=:uid " +
+            "and (:inicio is null or t.data >= :inicio) " +
+            "and (:fim is null or t.data <= :fim) " +
+            "and (:categoriaId is null or t.categoria.id = :categoriaId) order by t.data desc")
+    List<Transacao> buscarComFiltros(@Param("uid") Long uid, @Param("inicio") LocalDate inicio,
+            @Param("fim") LocalDate fim, @Param("categoriaId") Long categoriaId);
+
     @Query("select coalesce(sum(t.valor),0) from Transacao t where t.usuario.id=:uid and t.tipo=:tipo")
     BigDecimal sumValorByUsuarioIdAndTipo(@Param("uid") Long uid, @Param("tipo") TipoTransacao tipo);
-    @Query("select t from Transacao t where t.usuario.id=:uid and t.categoria.id=:cid order by t.data desc")
-    List<Transacao> findByUsuarioIdAndCategoriaId(@Param("uid") Long uid, @Param("cid") Long cid);
+
     Optional<Transacao> findByIdAndUsuarioId(Long id, Long usuarioId);
+    boolean existsByIdAndUsuarioId(Long id, Long usuarioId);
+
     @Query("select coalesce(sum(t.valor),0) from Transacao t where t.usuario.id=:uid and t.tipo=:tipo and t.id <> :id")
     BigDecimal sumValorByUsuarioIdAndTipoExcludingId(@Param("uid") Long uid, @Param("tipo") TipoTransacao tipo, @Param("id") Long id);
 }
