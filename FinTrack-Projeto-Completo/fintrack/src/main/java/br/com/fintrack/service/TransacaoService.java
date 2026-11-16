@@ -8,6 +8,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -38,19 +39,21 @@ public class TransacaoService {
 
     @Transactional
     public TransacaoDTO criar(TransacaoDTO dto, Authentication auth) {
-        Usuario usuario = usuarioService.usuarioAtual(auth);
+        // Bloqueio por usuário serializa validação de saldo, criação e mudanças de categoria.
+        Usuario usuario = usuarioService.usuarioAtualComBloqueio(auth);
         Categoria categoria = categoria(dto.categoriaId(), usuario.getId());
         validarCategoriaTipo(dto.tipo(), categoria);
         validarSaldo(dto.valor(), dto.tipo(), usuario.getId(), null);
 
         Transacao transacao = mapper.map(dto, Transacao.class);
+        transacao.setDescricao(dto.descricao().trim());
         associarProprietarioECategoria(transacao, categoria, usuario);
         return dto(transacoes.save(transacao));
     }
 
     @Transactional
     public TransacaoDTO atualizar(Long id, TransacaoDTO dto, Authentication auth) {
-        Usuario usuario = usuarioService.usuarioAtual(auth);
+        Usuario usuario = usuarioService.usuarioAtualComBloqueio(auth);
         Transacao transacao = transacoes.findByIdAndUsuarioId(id, usuario.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
         Categoria categoria = categoria(dto.categoriaId(), usuario.getId());
@@ -58,7 +61,7 @@ public class TransacaoService {
         validarSaldo(dto.valor(), dto.tipo(), usuario.getId(), id);
 
         Transacao dadosAtualizados = mapper.map(dto, Transacao.class);
-        transacao.setDescricao(dadosAtualizados.getDescricao());
+        transacao.setDescricao(dadosAtualizados.getDescricao().trim());
         transacao.setValor(dadosAtualizados.getValor());
         transacao.setData(dadosAtualizados.getData());
         transacao.setTipo(dadosAtualizados.getTipo());
@@ -68,8 +71,8 @@ public class TransacaoService {
 
     @Transactional
     public void excluir(Long id, Authentication auth) {
-        Long uid = usuarioService.usuarioAtual(auth).getId();
-        Transacao transacao = transacoes.findByIdAndUsuarioId(id, uid)
+        Usuario usuario = usuarioService.usuarioAtualComBloqueio(auth);
+        Transacao transacao = transacoes.findByIdAndUsuarioId(id, usuario.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
         transacoes.delete(transacao);
     }
@@ -77,17 +80,17 @@ public class TransacaoService {
     @Transactional(readOnly = true)
     public SaldoDTO saldo(Authentication auth) {
         Long uid = usuarioService.usuarioAtual(auth).getId();
-        BigDecimal receitas = transacoes.sumValorByUsuarioIdAndTipo(uid, TipoTransacao.RECEITA);
-        BigDecimal despesas = transacoes.sumValorByUsuarioIdAndTipo(uid, TipoTransacao.DESPESA);
+        Object[] totais = transacoes.calcularTotaisPorUsuario(uid, TipoTransacao.RECEITA, TipoTransacao.DESPESA);
+        BigDecimal receitas = totais[0] == null ? BigDecimal.ZERO : (BigDecimal) totais[0];
+        BigDecimal despesas = totais[1] == null ? BigDecimal.ZERO : (BigDecimal) totais[1];
         return new SaldoDTO(receitas, despesas, receitas.subtract(despesas));
     }
 
     @Transactional(readOnly = true)
     public boolean isOwner(Authentication auth, Long id) {
         if (auth == null) return false;
-        // Deixa IDs inexistentes chegarem ao Service para responder 404; IDs de terceiros seguem 403.
-        return !transacoes.existsById(id)
-                || transacoes.existsByIdAndUsuarioId(id, usuarioService.usuarioAtual(auth).getId());
+        return transacoes.pertenceAoUsuario(id, usuarioService.usuarioAtual(auth).getId())
+                .orElse(true);
     }
 
     private Categoria categoria(Long id, Long uid) {
