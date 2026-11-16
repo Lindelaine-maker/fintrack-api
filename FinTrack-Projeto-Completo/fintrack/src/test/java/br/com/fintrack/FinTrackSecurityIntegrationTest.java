@@ -98,6 +98,39 @@ class FinTrackSecurityIntegrationTest {
     }
 
     @Test
+    void modelMapperConverteTransacaoECalculaSaldoDoUsuario() throws Exception {
+        String token = registerAndGetToken("mapeamento");
+        String categoria = """
+            {"nome":"Salário","descricao":"Renda mensal","tipo":"RECEITA"}
+            """;
+        String categoriaResponse = mvc.perform(post("/api/v1/categorias")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON).content(categoria))
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString();
+        long categoriaId = objectMapper.readTree(categoriaResponse).get("id").asLong();
+
+        String transacao = """
+            {"descricao":"Salário de teste","valor":2500.00,"data":"2026-11-10",
+             "tipo":"RECEITA","categoriaId":%d}
+            """.formatted(categoriaId);
+        mvc.perform(post("/api/v1/transacoes")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON).content(transacao))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").isNumber())
+            .andExpect(jsonPath("$.descricao").value("Salário de teste"))
+            .andExpect(jsonPath("$.categoriaNome").value("Salário"));
+
+        mvc.perform(get("/api/v1/transacoes/relatorios/saldo")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalReceitas").value(2500.0))
+            .andExpect(jsonPath("$.totalDespesas").value(0.0))
+            .andExpect(jsonPath("$.saldoAtual").value(2500.0));
+    }
+
+    @Test
     void cadastroDuplicadoRetornaConflict() throws Exception {
         String email = "duplicado-" + UUID.randomUUID() + "@example.com";
         String body = """
