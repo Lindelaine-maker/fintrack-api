@@ -9,7 +9,7 @@ import java.util.List;
 public class Categoria {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
     @Column(nullable=false, length=80) private String nome;
-    @Column(name="nome_normalizado", nullable=false, length=80) private String nomeNormalizado;
+    @Column(name="nome_normalizado", length=80) private String nomeNormalizado;
     @Column(length=200) private String descricao;
     @Enumerated(EnumType.STRING) @Column(nullable=false, length=10) private TipoTransacao tipo;
     @ManyToOne(fetch=FetchType.LAZY, optional=false) @JoinColumn(name="usuario_id") private Usuario usuario;
