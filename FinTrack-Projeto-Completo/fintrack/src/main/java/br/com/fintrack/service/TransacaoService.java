@@ -121,6 +121,11 @@ public class TransacaoService {
     }
 
     private TransacaoDTO dto(Transacao transacao) {
-        return mapper.map(transacao, TransacaoDTO.class);
+        // ModelMapper é usado no mapeamento de entrada (record -> entidade).
+        // A saída é construída explicitamente porque records são imutáveis e o ModelMapper
+        // tenta instanciá-los por reflexão, o que falha para este tipo de destino.
+        return new TransacaoDTO(transacao.getId(), transacao.getDescricao(), transacao.getValor(),
+                transacao.getData(), transacao.getTipo(), transacao.getCategoria().getId(),
+                transacao.getCategoria().getNome());
     }
 }
