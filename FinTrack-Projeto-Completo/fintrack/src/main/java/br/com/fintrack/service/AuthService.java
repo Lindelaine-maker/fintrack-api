@@ -1,5 +1,6 @@
 package br.com.fintrack.service;
 import br.com.fintrack.dto.*;
+import br.com.fintrack.exception.ResourceConflictException;
 import br.com.fintrack.model.Usuario;
 import br.com.fintrack.repository.UsuarioRepository;
 import br.com.fintrack.security.JwtService;
@@ -18,13 +19,15 @@ public class AuthService {
     }
     @Transactional
     public TokenDTO register(RegisterDTO dto){
-        if(usuarios.existsByEmail(dto.email().toLowerCase())) throw new IllegalArgumentException("Este e-mail já está cadastrado.");
-        Usuario u=new Usuario();u.setNome(dto.nome().trim());u.setEmail(dto.email().toLowerCase().trim());u.setSenha(encoder.encode(dto.senha()));
+        String email=dto.email().trim().toLowerCase();
+        if(usuarios.existsByEmail(email)) throw new ResourceConflictException("Este e-mail já está cadastrado.");
+        Usuario u=new Usuario();u.setNome(dto.nome().trim());u.setEmail(email);u.setSenha(encoder.encode(dto.senha()));
         usuarios.save(u); return token(u);
     }
     public TokenDTO login(LoginDTO dto){
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(dto.email().toLowerCase(),dto.senha()));
-        Usuario u=usuarios.findByEmail(dto.email().toLowerCase()).orElseThrow();
+        String email=dto.email().trim().toLowerCase();
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email,dto.senha()));
+        Usuario u=usuarios.findByEmail(email).orElseThrow(()->new BadCredentialsException("Credenciais inválidas."));
         return token(u);
     }
     private TokenDTO token(Usuario u){
