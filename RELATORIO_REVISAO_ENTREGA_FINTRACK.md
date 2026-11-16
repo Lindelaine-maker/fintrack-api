@@ -4,7 +4,7 @@
 **Data da revisão:** 16/11/2026  
 **Repositório:** https://github.com/Lindelaine-maker/fintrack-api  
 **Branch de trabalho:** `review/fintrack-entrega-professor`  
-**Pull request:** https://github.com/Lindelaine-maker/fintrack-api/pull/4
+**Pull request:** https://github.com/Lindelaine-maker/fintrack-api/pull/5
 
 ---
 
@@ -36,7 +36,7 @@ Este documento diferencia:
 | Versionamento da API | Prefixo `/api/v1` nos recursos financeiros | Implementado |
 | DTOs | `TransacaoDTO`, `CategoriaDTO`, `SaldoDTO`, DTOs de autenticação | Implementado |
 | Camada de serviço | Serviços de autenticação, usuário, categoria e transação | Implementado |
-| ModelMapper DTO ↔ entidade | Configuração e injeção no `TransacaoService`; conversão para o record de resposta por conversor | Ajustado; aguarda CI |
+| ModelMapper DTO de entrada → entidade | Configuração e injeção no `TransacaoService`; campos de controle são ignorados e preenchidos pelo serviço | Implementado; aguarda CI |
 | Cálculo de saldo e validação de despesa | Regra em `TransacaoService`; despesa acima do saldo gera conflito | Implementado; precisa de execução de testes |
 | Spring Security e JWT | `SecurityFilterChain`, filtro JWT, autenticação stateless | Implementado |
 | Endpoints públicos de cadastro/login | `/api/auth/register` e `/api/auth/login` | Implementado |
@@ -54,9 +54,9 @@ O pipeline anterior falhava ao tentar criar um mapeamento convencional para `Tra
 
 Correção:
 - Mantida a conversão request DTO → entidade `Transacao`.
-- Registrado um `Converter<Transacao, TransacaoDTO>` que instancia o record por seu construtor canônico.
+- O ModelMapper é usado no mapeamento de entrada (`TransacaoDTO` → `Transacao`).
 - Campos de controle (ID, usuário e categoria) continuam sob responsabilidade do servidor.
-- O serviço injeta e utiliza efetivamente o ModelMapper.
+- A resposta `TransacaoDTO` é construída explicitamente pelo construtor canônico do record, evitando a tentativa de instanciação reflexiva que falha para tipos finais.
 
 ### 3.2 Concorrência no saldo
 
@@ -129,7 +129,7 @@ Comando recomendado na pasta `FinTrack-Projeto-Completo/fintrack`:
 mvn clean verify
 ```
 
-**Status de execução:** a última execução de GitHub Actions consultada antes destas correções falhou porque o ModelMapper tentava mapear diretamente para o record final `TransacaoDTO`. O conversor foi corrigido nesta branch, mas a aprovação só deve ser declarada depois que a nova execução de CI terminar com sucesso. Não há neste relatório uma alegação de testes verdes sem essa confirmação.
+**Status de execução:** a execução de GitHub Actions da branch falhou na inicialização do contexto Spring. A causa foi a tentativa de registrar `Converter<Transacao, TransacaoDTO>` no ModelMapper, que ainda dispara erro para o destino record final. A implementação foi simplificada: ModelMapper permanece no mapeamento de entrada DTO → entidade e a resposta record é criada pelo construtor. A correção precisa ser confirmada por uma nova execução de CI. Não há neste relatório uma alegação de testes verdes sem essa confirmação.
 
 ## 6. Documentação e demonstração
 
@@ -175,4 +175,4 @@ Sugestão de sequência objetiva:
 
 A branch de revisão contém ajustes importantes para alinhar o FinTrack aos requisitos centrais do Projeto 2 do módulo avançado: JPA e relacionamentos, API REST versionada, DTOs e serviços, ModelMapper efetivo, validação de saldo, segurança JWT multiusuário, documentação OpenAPI e testes isolados.
 
-**A entrega deve ser considerada tecnicamente revisada, mas ainda condicionada à aprovação do CI após as últimas alterações e à decisão consciente sobre as limitações registradas na seção 7.** Não se deve apresentar este relatório como certificação externa ou como prova de que todos os cenários de concorrência e repetição de requisições foram cobertos.
+**A entrega permanece condicionada à aprovação do CI após as últimas alterações e à decisão consciente sobre as limitações registradas na seção 7.** Não se deve apresentar este relatório como certificação externa ou como prova de que todos os cenários de concorrência e repetição de requisições foram cobertos.
