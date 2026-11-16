@@ -112,6 +112,10 @@ Resposta esperada (valores ilustrativos):
 {"totalReceitas":3500.00,"totalDespesas":450.00,"saldoAtual":3050.00}
 ```
 
+## Testes automatizados
+
+O projeto inclui testes de integração para confirmar que endpoints financeiros exigem JWT, que um usuário não consegue excluir categorias de outro usuário e que e-mails duplicados retornam HTTP 409. Execute com `mvn clean verify`.
+
 ## Endpoints
 
 | Método | Rota | Acesso | Descrição |
