@@ -4,7 +4,7 @@
 **Data da revisão:** 16/11/2026  
 **Repositório:** https://github.com/Lindelaine-maker/fintrack-api  
 **Branch de trabalho:** `review/fintrack-entrega-professor`  
-**Pull request:** https://github.com/Lindelaine-maker/fintrack-api/pull/5
+**Pull request:** https://github.com/Lindelaine-maker/fintrack-api/pull/6
 
 ---
 
@@ -129,7 +129,7 @@ Comando recomendado na pasta `FinTrack-Projeto-Completo/fintrack`:
 mvn clean verify
 ```
 
-**Status de execução:** a execução de GitHub Actions da branch falhou na inicialização do contexto Spring. A causa foi a tentativa de registrar `Converter<Transacao, TransacaoDTO>` no ModelMapper, que ainda dispara erro para o destino record final. A implementação foi simplificada: ModelMapper permanece no mapeamento de entrada DTO → entidade e a resposta record é criada pelo construtor. A correção precisa ser confirmada por uma nova execução de CI. Não há neste relatório uma alegação de testes verdes sem essa confirmação.
+**Status de execução:** a execução de CI mais recente falhou na criação do bean `ModelMapper`. O log identifica `Cannot map final type br.com.fintrack.dto.TransacaoDTO`, originado pela configuração explícita de `TypeMap`. A correção preparada nesta branch remove esse mapeamento explícito, mantém o ModelMapper para os campos escalares de entrada e constrói o `record` de resposta diretamente no serviço. A nova execução de CI ainda precisa confirmar a correção; não se declara a suíte aprovada antes do resultado verde.
 
 ## 6. Documentação e demonstração
 
