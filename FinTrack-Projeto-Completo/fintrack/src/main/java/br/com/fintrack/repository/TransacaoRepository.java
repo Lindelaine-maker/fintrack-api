@@ -22,6 +22,7 @@ public interface TransacaoRepository extends JpaRepository<Transacao,Long> {
 
     Optional<Transacao> findByIdAndUsuarioId(Long id, Long usuarioId);
     boolean existsByIdAndUsuarioId(Long id, Long usuarioId);
+    boolean existsByCategoriaId(Long categoriaId);
 
     @Query("select coalesce(sum(t.valor),0) from Transacao t where t.usuario.id=:uid and t.tipo=:tipo and t.id <> :id")
     BigDecimal sumValorByUsuarioIdAndTipoExcludingId(@Param("uid") Long uid, @Param("tipo") TipoTransacao tipo, @Param("id") Long id);
