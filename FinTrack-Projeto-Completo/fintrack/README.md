@@ -14,7 +14,7 @@ Migrar a lógica de finanças pessoais para um back-end multiusuário, com persi
 - H2 (desenvolvimento e testes) e PostgreSQL (perfil alternativo)
 - Spring Security, JWT (JJWT) e BCrypt
 - Bean Validation
-- ModelMapper para conversão DTO ↔ entidade de transação
+- ModelMapper para conversão dos campos escalares do DTO de entrada para a entidade de transação; DTO de saída imutável construído explicitamente
 - Swagger/OpenAPI (springdoc)
 - JUnit 5, Spring Boot Test, MockMvc e Spring Security Test
 
@@ -31,7 +31,7 @@ Migrar a lógica de finanças pessoais para um back-end multiusuário, com persi
 | API REST | `AuthController`, `CategoriaController`, `TransacaoController` |
 | DTOs | `RegisterDTO`, `LoginDTO`, `TokenDTO`, `CategoriaDTO`, `TransacaoDTO`, `SaldoDTO` |
 | Camada de serviço | Serviços de autenticação, usuário, categoria e transação |
-| ModelMapper | Injeção no `TransacaoService` para request → entidade e entidade → response |
+| ModelMapper | Injeção no `TransacaoService` para request → entidade; resposta `record` construída explicitamente |
 | Tratamento de erros | `GlobalExceptionHandler` com respostas 400, 404, 409 e demais erros |
 | Segurança | JWT stateless, BCrypt, `SecurityFilterChain`, `@PreAuthorize` e verificação de propriedade |
 | Swagger/OpenAPI | Tags, operações, DTO schemas, Bearer JWT e códigos de resposta |
