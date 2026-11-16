@@ -57,7 +57,11 @@ public class TransacaoService {
         validarCategoriaTipo(dto.tipo(), categoria);
         validarSaldo(dto.valor(), dto.tipo(), usuario.getId(), id);
 
-        mapper.map(dto, transacao);
+        Transacao dadosAtualizados = mapper.map(dto, Transacao.class);
+        transacao.setDescricao(dadosAtualizados.getDescricao());
+        transacao.setValor(dadosAtualizados.getValor());
+        transacao.setData(dadosAtualizados.getData());
+        transacao.setTipo(dadosAtualizados.getTipo());
         associarProprietarioECategoria(transacao, categoria, usuario);
         return dto(transacao);
     }
