@@ -17,19 +17,20 @@ public class ModelMapperConfig {
                 .setFieldMatchingEnabled(true)
                 .setFieldAccessLevel(AccessLevel.PRIVATE);
 
-        // Protege campos que só podem ser definidos pelo servidor.
+        // O destino Transacao é mutável; campos de controle são definidos pelo servidor.
         mapper.typeMap(TransacaoDTO.class, Transacao.class).addMappings(m -> {
             m.skip(Transacao::setId);
             m.skip(Transacao::setUsuario);
             m.skip(Transacao::setCategoria);
         });
 
+        // Records são finais e imutáveis: converte para o construtor canônico sem tentar instanciá-los.
         Converter<Transacao, TransacaoDTO> toDto = context -> {
             Transacao t = context.getSource();
             return new TransacaoDTO(t.getId(), t.getDescricao(), t.getValor(), t.getData(),
                     t.getTipo(), t.getCategoria().getId(), t.getCategoria().getNome());
         };
-        mapper.createTypeMap(Transacao.class, TransacaoDTO.class).setConverter(toDto);
+        mapper.addConverter(toDto);
         return mapper;
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
@@ -16,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class FinTrackEndpointsIntegrationTest {
     @Autowired private MockMvc mvc;
     @Autowired private ObjectMapper mapper;
@@ -30,10 +32,6 @@ class FinTrackEndpointsIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn().getResponse().getContentAsString();
         return mapper.readTree(response).get("token").asText();
-    }
-
-    private String json(Object value) throws Exception {
-        return mapper.writeValueAsString(value);
     }
 
     @Test
@@ -135,18 +133,13 @@ class FinTrackEndpointsIntegrationTest {
             .andExpect(jsonPath("$.totalDespesas").value(500.00))
             .andExpect(jsonPath("$.saldoAtual").value(3000.00));
 
-        mvc.perform(delete("/api/v1/transacoes/" + expenseId)
-                .header("Authorization", auth))
+        mvc.perform(delete("/api/v1/transacoes/" + expenseId).header("Authorization", auth))
             .andExpect(status().isNoContent());
-        mvc.perform(delete("/api/v1/transacoes/" + incomeId)
-                .header("Authorization", auth))
+        mvc.perform(delete("/api/v1/transacoes/" + incomeId).header("Authorization", auth))
             .andExpect(status().isNoContent());
-
-        mvc.perform(delete("/api/v1/categorias/" + expenseCategoryId)
-                .header("Authorization", auth))
+        mvc.perform(delete("/api/v1/categorias/" + expenseCategoryId).header("Authorization", auth))
             .andExpect(status().isNoContent());
-        mvc.perform(delete("/api/v1/categorias/" + incomeCategoryId)
-                .header("Authorization", auth))
+        mvc.perform(delete("/api/v1/categorias/" + incomeCategoryId).header("Authorization", auth))
             .andExpect(status().isNoContent());
     }
 
