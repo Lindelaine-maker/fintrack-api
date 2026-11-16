@@ -2,6 +2,7 @@ package br.com.fintrack.exception;
 
 import jakarta.validation.ValidationException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -24,9 +25,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body(HttpStatus.NOT_FOUND,e.getMessage()));
     }
 
-    @ExceptionHandler(ResourceConflictException.class)
-    ResponseEntity<?> conflict(ResourceConflictException e){
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body(HttpStatus.CONFLICT,e.getMessage()));
+    @ExceptionHandler({ResourceConflictException.class, OptimisticLockingFailureException.class})
+    ResponseEntity<?> conflict(RuntimeException e){
+        String message = e instanceof ResourceConflictException
+                ? e.getMessage()
+                : "O registro foi alterado por outra requisição. Recarregue os dados e tente novamente.";
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body(HttpStatus.CONFLICT,message));
     }
 
     @ExceptionHandler(SaldoInsuficienteException.class)
