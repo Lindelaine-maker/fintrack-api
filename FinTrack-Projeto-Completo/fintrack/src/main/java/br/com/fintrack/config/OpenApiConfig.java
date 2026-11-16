@@ -12,7 +12,8 @@ public class OpenApiConfig {
     @Bean
     OpenAPI finTrackOpenAPI() {
         return new OpenAPI().info(new Info().title("FinTrack API")
-                .description("API de gerenciamento de finanças pessoais").version("v1"))
+                .description("API RESTful de gerenciamento de finanças pessoais. Os endpoints financeiros exigem JWT.")
+                .version("v1"))
             .components(new Components().addSecuritySchemes("bearerAuth",
                 new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
     }
